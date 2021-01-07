@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>b站首页顶部渐变图片实现</title>
+</head>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+.main {
+    margin: 0 auto;
+    position: relative;
+    z-index: 0;
+    min-height: 155px;
+    height: 9.375vw;
+    min-width: 999px;
+    background-color: #f9f9f9;
+    display: -ms-flexbox;
+    display: flex;
+    justify-content: center;
+    background-repeat: no-repeat;
+    background-position: center 0;
+    background-size: cover;
+}
+.main .move {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.main .move .layer{
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+</style>
+
+<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+<body>
+<div class="main">
+    <div class="move" id="app">
+        <div class="layer">
+            <img src="./image/morning_bg.jpg" width="2016" height="155" :style="morning_bg">
+        </div>
+        <div class="layer">
+            <img src="./image/moon_bg.jpg" width="2016" height="155" :style="moon_bg">
+        </div>
+        <div class="layer">
+            <video loop="loop" autoplay="autoplay" src="./image/night_bg.webm" width="2016" height="155" :style="night_bg"/>
+        </div>
+        <div class="layer">
+            <img src="./image/window.png" width="2016" height="155" :style="window_bg">
+        </div>
+        <div class="layer">
+            <img src="./image/morning_tree.png"  width="2016" height="155" :style="morning_tree">
+        </div>
+        <div class="layer">
+            <img src="./image/moon_tree.png" width="2016" height="155" :style="moon_tree">
+        </div>
+        <div class="layer">
+            <img src="./image/night_tree.png" width="2016" height="155" :style="night_tree">
+        </div>
+    </div>
+</div>
+</body>
+<script>
+new Vue({
+    el: "#app",
+    data() {
+        return {
+            morning_bg: {
+                opacity: 1
+            },
+            moon_bg: {
+                opacity: 0
+            },
+            morning_tree: {
+                opacity: 1,
+                filter: 'blur(2px)'
+            },
+            moon_tree: {
+                opacity: 0,
+                filter: 'blur(2px)'
+            },
+            night_bg: {
+                width: '2016px',
+                height: '155px',
+                opacity: 1
+            },
+            night_tree: {
+                opacity: 1,
+                filter: 'blur(5px)'
+            },
+            window_bg: {
+                opacity: 1
+            }
+        }
+    },
+    mounted() {
+        window.addEventListener('mousemove',this.move);
+    },
+    destroyed() {
+        window.removeEventListener('mousemove',this.move);
+    },
+    methods: {
+        move(event) {
+            const x = event.x
+            const xPercent = x / window.innerWidth
+            const relativePos = xPercent - 0.5
+            let moonOpacity = 0
+            let moonTreeOpacity = 0
+            let nightOpacity = 0
+            let nighTreetOpacity = 0
+            let windowOpacity = 0
+            if (xPercent >= 0 && xPercent < 4/7) {
+                moonOpacity = moonTreeOpacity = this.computeOpacity(xPercent * 7/4);
+            }
+            if (xPercent >= 3/7 && xPercent <= 1) {
+                if (xPercent >= 4/7) {
+                    moonOpacity = moonTreeOpacity = 1
+                }
+                nightOpacity = nighTreetOpacity = this.computeOpacity((xPercent - 3/7) * 7/3);
+                if (xPercent >= 1/2) {
+                    windowOpacity = this.computeOpacity((xPercent - 1/2) * 2)
+                }
+            }
+            this.moon_bg.opacity = moonOpacity
+            this.moon_tree.opacity = moonTreeOpacity
+            this.night_bg.opacity = nightOpacity
+            this.night_tree.opacity = nighTreetOpacity
+            this.window_bg.opacity = windowOpacity
+            const bgMotion = 100 * relativePos
+            const treeMotion = 50 * relativePos;
+            this.morning_bg.transform = 'translateX(' + bgMotion + 'px)'
+            this.moon_bg.transform = 'translateX(' + bgMotion + 'px)'
+            this.night_bg.transform = 'translateX(' + bgMotion + 'px)'
+            this.window_bg.transform = 'translateX(' + bgMotion + 'px)'
+            this.morning_tree.transform = 'translateX(' + treeMotion + 'px)'
+            this.moon_tree.transform = 'translateX(' + treeMotion + 'px)'
+            this.night_tree.transform = 'translateX(' + treeMotion + 'px)'
+            console.log(xPercent)
+        },
+        computeOpacity(pos){
+            if (pos === 0) return 0
+            if (pos === 1) return 1
+            if ((pos /= 0.5) < 1) return 0.5 * Math.pow(2, 10 * (pos - 1))
+            return 0.5 * (-Math.pow(2, -10 * --pos) + 2)
+        }
+    }
+});
+</script>
+</html>
